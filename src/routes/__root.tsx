@@ -7,7 +7,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, useCallback, type ReactNode } from "react";
+import { LoadingCompleteContext } from "../hooks/useLoadingComplete";
 import { motion, useSpring, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
 
@@ -190,6 +191,17 @@ function CustomCursor() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [loadingDone, setLoadingDone] = useState(() => {
+    // If the user has already seen the loading screen this session, skip it
+    if (typeof window !== "undefined" && sessionStorage.getItem("cdv-loaded")) {
+      return true;
+    }
+    return false;
+  });
+
+  const handleLoadingComplete = useCallback(() => {
+    setLoadingDone(true);
+  }, []);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -216,16 +228,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CustomCursor />
-      <LoadingScreen />
-      <Nav />
-      <main className="min-h-screen relative z-10">
-        <PageTransition>
-          <Outlet />
-        </PageTransition>
-      </main>
-      <Footer />
-      <FloatingWidgets />
+      <LoadingCompleteContext.Provider value={loadingDone}>
+        <CustomCursor />
+        <LoadingScreen onComplete={handleLoadingComplete} />
+        <Nav />
+        <main className="min-h-screen relative z-10">
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
+        </main>
+        <Footer />
+        <FloatingWidgets />
+      </LoadingCompleteContext.Provider>
     </QueryClientProvider>
   );
 }

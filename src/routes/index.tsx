@@ -131,12 +131,10 @@ function Ticker() {
 }
 
 import { useState, useRef } from "react";
+import { useLoadingComplete } from "@/hooks/useLoadingComplete";
 
 function Home() {
-  const [delayOffset] = useState(() => {
-    if (typeof window === "undefined") return 0;
-    return !sessionStorage.getItem("cdv-loaded") ? 2.8 : 0;
-  });
+  const loadingDone = useLoadingComplete();
 
   const heroRef = useRef(null);
   const { scrollYProgress: heroScroll } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -161,16 +159,20 @@ function Home() {
         <CandleEmbers />
         <Bokeh />
         <motion.div style={{ opacity: heroOpacity }} className="relative z-10 text-center px-8 py-12 md:py-16 md:px-16 max-w-4xl mx-auto rounded-3xl bg-white/5 backdrop-blur-md border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
-          {/* Sparkles around the box */}
-          <Sparkle delay={0.2 + delayOffset} size={24} style={{ top: "-12px", left: "10%" }} />
-          <Sparkle delay={1.5 + delayOffset} size={18} style={{ top: "20%", right: "-8px" }} />
-          <Sparkle delay={0.8 + delayOffset} size={32} style={{ bottom: "-16px", right: "20%" }} />
-          <Sparkle delay={2.1 + delayOffset} size={14} style={{ bottom: "30%", left: "-6px" }} />
+          {/* Sparkles around the box — only start after loading done */}
+          {loadingDone && (
+            <>
+              <Sparkle delay={0.2} size={24} style={{ top: "-12px", left: "10%" }} />
+              <Sparkle delay={1.5} size={18} style={{ top: "20%", right: "-8px" }} />
+              <Sparkle delay={0.8} size={32} style={{ bottom: "-16px", right: "20%" }} />
+              <Sparkle delay={2.1} size={14} style={{ bottom: "30%", left: "-6px" }} />
+            </>
+          )}
 
           <motion.p
             initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 + delayOffset, duration: 1, type: "spring" }}
+            animate={loadingDone ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+            transition={{ delay: 0.3, duration: 1, type: "spring" }}
             className="text-xs md:text-sm uppercase tracking-[0.5em] text-gold mb-6"
           >
             Satyaniketan · New Delhi
@@ -178,14 +180,14 @@ function Home() {
           <motion.h1
             className="font-serif text-6xl md:text-8xl lg:text-9xl text-cream leading-[0.95] text-balance flex flex-wrap justify-center overflow-hidden py-4"
             initial="hidden"
-            animate="visible"
+            animate={loadingDone ? "visible" : "hidden"}
             variants={{
               hidden: { opacity: 1 },
               visible: {
                 opacity: 1,
                 transition: {
                   staggerChildren: 0.08,
-                  delayChildren: 0.5 + delayOffset,
+                  delayChildren: 0.5,
                 },
               },
             }}
@@ -212,16 +214,16 @@ function Home() {
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.5 + delayOffset, duration: 1 }}
+            animate={loadingDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ delay: 1.5, duration: 1 }}
             className="mt-6 font-serif italic text-xl md:text-2xl text-foreground/85 text-balance"
           >
             Savor exquisite flavors in every bite.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.8 + delayOffset, duration: 1 }}
+            animate={loadingDone ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            transition={{ delay: 1.8, duration: 1 }}
             className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
           >
             <Magnetic>
@@ -238,7 +240,7 @@ function Home() {
         </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.5 }}
+          animate={loadingDone ? { opacity: 0.5 } : { opacity: 0 }}
           transition={{ delay: 2, duration: 1 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] uppercase tracking-[0.4em] text-cream/60"
         >

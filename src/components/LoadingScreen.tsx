@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
-export function LoadingScreen() {
+export function LoadingScreen({ onComplete }: { onComplete?: () => void }) {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [unmount, setUnmount] = useState(false);
 
@@ -12,6 +12,8 @@ export function LoadingScreen() {
     
     const t2 = setTimeout(() => {
       setUnmount(true);
+      sessionStorage.setItem("cdv-loaded", "1");
+      onComplete?.();
     }, 5000);
 
     return () => {
@@ -161,3 +163,5 @@ export function LoadingScreen() {
     </AnimatePresence>
   );
 }
+
+
